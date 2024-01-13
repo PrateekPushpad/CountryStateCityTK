@@ -94,6 +94,40 @@ namespace UI.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(EditStudentViewModel vm)
         {
+            var student = await _studentRepo.GetById(vm.Id);
+            student.Name = vm.StudentName;
+            var existingSkillIds = student.StudentSkills
+                .Select(x => x.SkillId).ToList();
+
+            var selectedSkillIds = vm.SkillList.Where(x => x.IsChecked)
+                .Select(x => x.SkillId);
+
+            var toRemove = existingSkillIds.Except(selectedSkillIds);
+            var toAdd = selectedSkillIds.Except(existingSkillIds);
+
+            foreach(var skill in toRemove)
+            {
+                var studentskill = student.StudentSkills.FirstOrDefault(wh => wh.SkillId == skill);
+                student.StudentSkills.Remove(studentskill);
+            }
+            foreach (var skill in toAdd)
+            {
+                var studentskill = student.StudentSkills.FirstOrDefault(wh => wh.SkillId == skill);
+                student.StudentSkills.Add(new StudentSkill
+                {
+                    SkillId = skill
+                }); 
+            }
+            await _studentRepo.Edit(student);
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int Id)
+        {
+            var student = await _studentRepo.GetById(Id);
+            await _studentRepo.RemoveData(student);
             return RedirectToAction("Index");
         }
 

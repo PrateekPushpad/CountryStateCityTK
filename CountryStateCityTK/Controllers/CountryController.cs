@@ -16,13 +16,19 @@ namespace UI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            List<CountryViewModel> vm = new List<CountryViewModel>();
-            var countries = await this.countryRepo.GetAll();
-            foreach (var country in countries)
+            if(HttpContext.Session.GetInt32("User") != null)
             {
-                vm.Add(new CountryViewModel { Id = country.Id, Name = country.Name});
+                List<CountryViewModel> vm = new List<CountryViewModel>();
+                var countries = await this.countryRepo.GetAll();
+                foreach (var country in countries)
+                {
+                    vm.Add(new CountryViewModel { Id = country.Id, Name = country.Name });
+                }
+                return View(vm);
             }
-            return View(vm);
+
+            return RedirectToAction("Login", "Auth");
+
         }
 
         [HttpGet]

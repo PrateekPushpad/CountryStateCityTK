@@ -14,16 +14,43 @@ namespace UI.Controllers
         {
             _skillRepo = skillRepo;
         }
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        
+        public async Task<IActionResult> GetAll(string filterText, int pageNumber = 1, int pageSize = 3, string searchText = null)
         {
             List<SkillViewModel> vm = new List<SkillViewModel>();
             var skills = await this._skillRepo.GetAll();
+            if(searchText != null)
+            {
+                pageNumber = 1;
+            }
+            else
+            {
+                searchText = filterText;
+            }
+            ViewData["filterData"] = searchText;
+
+            var totalCount = 0;
+            if(!string.IsNullOrEmpty(searchText))
+            {
+                skills = skills.Where(x=>x.Title.Contains(searchText));
+            }
+            totalCount = skills.Count();
+            skills = skills.Skip((pageNumber-1)*pageSize).Take(pageSize).ToList();
             foreach (var skill in skills)
             {
                 vm.Add(new SkillViewModel { Id = skill.Id, Title = skill.Title });
             }
-            return View(vm);
+            var pvm = new PagedSkillViewModel
+            {
+                Skills = vm,
+                PageInfo = new Utility.PageInfo
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalItems = totalCount
+                }
+            };
+            return View(pvm);
         }
 
         [HttpGet]
@@ -41,15 +68,21 @@ namespace UI.Controllers
         {
             return View();
         }
+
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateSkillViewModel vm)
         {
-            var skill = new Skill
+            if (ModelState.IsValid)
             {
-                Title = vm.Title
-            };
-            await _skillRepo.Save(skill);
-            return RedirectToAction("GetAll");
+                var skill = new Skill
+                {
+                    Title = vm.Title
+                };
+                await _skillRepo.Save(skill);
+                return RedirectToAction("GetAll");
+            }
+            return View();
         }
         [HttpGet]
         public async Task<IActionResult> Edit(int Id)

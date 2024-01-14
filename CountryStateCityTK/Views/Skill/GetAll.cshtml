@@ -25,10 +25,10 @@
     <thead>
         <tr>
             <th>
-                Id
+                <a asp-route-sortOrder="@ViewData["sortId"]">Id</a>
             </th>
             <th>
-                Title
+                <a asp-route-sortOrder="@ViewData["sortTitle"]">Title</a>
             </th>
             <th></th>
         </tr>
@@ -56,5 +56,5 @@
     var next = Model.PageInfo.HasNext ? "" : "disabled";
 }
 
-<a asp-route-filterText="@ViewData["filterData"]" class="btn btn-info @previous" asp-route-pageNumber="@(Model.PageInfo.PageNumber - 1)">Previous</a>
-<a asp-route-filterText="@ViewData["filterData"]" class="btn btn-info @next" asp-route-pageNumber="@(Model.PageInfo.PageNumber + 1)">Next</a>
+<a asp-route-sortOrder="@ViewData["sortFilter"]" asp-route-filterText="@ViewData["filterData"]" class="btn btn-info @previous" asp-route-pageNumber="@(Model.PageInfo.PageNumber - 1)">Previous</a>
+<a asp-route-sortOrder="@ViewData["sortFilter"]" asp-route-filterText="@ViewData["filterData"]" class="btn btn-info @next" asp-route-pageNumber="@(Model.PageInfo.PageNumber + 1)">Next</a>

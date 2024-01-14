@@ -15,9 +15,14 @@ namespace UI.Controllers
             _skillRepo = skillRepo;
         }
         
-        public async Task<IActionResult> GetAll(string filterText, int pageNumber = 1, int pageSize = 3, string searchText = null)
+        public async Task<IActionResult> GetAll(string sortOrder, string filterText, int pageNumber = 1, int pageSize = 3, string searchText = null)
         {
             List<SkillViewModel> vm = new List<SkillViewModel>();
+
+            ViewData["SortFilter"] = sortOrder;
+            ViewData["sortId"] = sortOrder == "Id_desc" ? "" : "Id_desc";
+            ViewData["sortTitle"] = sortOrder == "title_desc" ? "title_asc" : "title_desc";
+
             var skills = await this._skillRepo.GetAll();
             if(searchText != null)
             {
@@ -28,6 +33,14 @@ namespace UI.Controllers
                 searchText = filterText;
             }
             ViewData["filterData"] = searchText;
+
+            switch (sortOrder)
+            {
+                case "Id_desc": skills = skills.OrderByDescending(x=>x.Id).ToList(); break; 
+                case "title_desc": skills = skills.OrderByDescending(x=>x.Title).ToList(); break; 
+                case "title_asc": skills = skills.OrderBy(x=>x.Title).ToList(); break;
+                default: skills = skills.OrderBy(x=>x.Id).ToList(); break; 
+            }
 
             var totalCount = 0;
             if(!string.IsNullOrEmpty(searchText))
